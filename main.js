@@ -75,7 +75,7 @@ $(window).on('load', function() {
   if (rnd < 0.05) {
     limit = '3日後'
   }
-  else if (rnd < 0.1)
+  else if (rnd < 0.2)
   {
     limit = '10日後'
   }
