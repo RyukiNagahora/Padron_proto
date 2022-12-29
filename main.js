@@ -24,14 +24,14 @@ let whats = [
 $(window).on('load', function() {
   console.log('onload')
 
-  //
+  // 背景に情報を載せる
   $('.bg-info_ua').text(window.navigator.userAgent)
   $('.bg-info_appName').text(window.navigator.appName)
   $('.bg-info_appVersion').text(window.navigator.appVersion)
   $('.bg-info_width').text(window.screen.width)
   $('.bg-info_height').text(window.screen.height)
 
-  //
+  // クッキーから何回訪問したか、いつ以来かを算出
   let times = Cookies.get('times')
   if (times === undefined)
   {
@@ -42,60 +42,65 @@ $(window).on('load', function() {
     Cookies.set('times', times)
     $('.bg-info_times').text(times + ' times')
   }
-  
-  //
   let since = Cookies.get('since')
   if (since !== undefined) {
     $('.bg-info_since').text('since ' + since)
   }
 
-  //
-  let number = 1
-  let rnd = Math.random()
-  if (rnd < 0.05) number = 3
-  else if (rnd < 0.2) number = 2
-  console.log(number + ' : ' + rnd);
-  //
-  let mens = ''
-  for (let i = 0; i < number; i++) {
-    if (i > 0) mens += ' + '
-    rnd = getRandomInt(member.length)
-    mens += member[rnd]
-    member.splice(rnd, 1)
-    console.log('leng : ' + member.length);
-  }
-  console.log('mens : ' + mens)
-  $('.revelation_who').text(mens)
-  //
-  rnd = getRandomInt(whats.length)
-  $('.revelation_what').text(whats[rnd])
-  //
-  let limit = ''
-  rnd = Math.random()
-  if (rnd < 0.05) {
-    limit = '3日後'
-  }
-  else if (rnd < 0.2)
-  {
-    limit = '10日後'
-  }
-  else {
-    limit = '30日後'
-  }
-  $('.revelation_limit').text(limit)
+  // XMLHttpRequestオブジェクトの作成
+  var request = new XMLHttpRequest();
 
+  // URLをセット
+  var URL = 'https://us-central1-padron-web.cloudfunctions.net/nowOracle';
+
+  // URLを開く
+  request.open('GET', URL, true);
+
+  // レスポンスが返ってきた時の処理を記述 
+  request.onload = onGetOracle;
+
+  // リクエストをURLに送信
+  request.send();
+})
+
+///
+function onGetOracle()
+{
+  // レスポンスが返ってきた時の処理
+  const data = this.response;
+  console.log(data);
+
+  // 返ってきたJSONをオブジェクトに
+  const obj = JSON.parse(data);
+
+  // 期限の差分を取る
+  const today = new Date();
+  const limitDate = new Date(obj.limit);
+  const diffTime = limitDate.getTime() - today.getTime();
+  const diffDay = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  // HTMLに反映
+  $('.revelation_times').text('Directive__' + obj.times);
+  $('.revelation_who').text(obj.who);
+  $('.revelation_what').text(obj.what);
+  $('.revelation_limit').text('Released in ' + diffDay + 'd');
+  
   //
-  let base = 800
+  const base = 800
   setTimeout(() => {
-    $('.revelation_who').addClass('show')
+    $('.revelation_times').addClass('show')
   }, base);
   setTimeout(() => {
-    $('.revelation_what').addClass('show')
+    $('.revelation_who').addClass('show')
   }, base * 2);
   setTimeout(() => {
-    $('.revelation_limit').addClass('show')
+    $('.revelation_what').addClass('show')
   }, base * 3);
-})
+  setTimeout(() => {
+    $('.revelation_limit').addClass('show')
+  }, base * 4);
+
+}
 
 var request = new XMLHttpRequest();
 request.open('HEAD', window.location.href, true);
